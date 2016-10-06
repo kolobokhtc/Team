@@ -5,12 +5,16 @@
 import {NgModule} from "@angular/core";
 import {routing} from "./user.routing";
 import {UserComponent} from "./user.component";
+import {UserDetailComponent} from "./user-detail.component";
+import {UserListComponent} from "./user-list.component";
 @NgModule({
     imports: [
         routing
     ],
     declarations: [
-        UserComponent
+        UserComponent,
+        UserDetailComponent,
+        UserListComponent
     ]
 })
 export class UserModule {}
