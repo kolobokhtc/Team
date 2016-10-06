@@ -1,0 +1,17 @@
+<FilesMatch ".swp$">
+deny from all
+</FilesMatch>
+
+php_flag display_startup_errors off
+php_flag display_errors on
+php_flag html_errors off
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+
+RewriteRule ^ - [NC,L]
+
+RewriteRule ^(.*) index.php [NC,L]
