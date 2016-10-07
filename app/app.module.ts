@@ -2,17 +2,22 @@ import {NgModule} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
 import {AppComponent} from "./app.component";
 import {routing} from "./app.routing";
-import {UserModule} from "./user/user.module";
 import {CoreModule} from "./core/core.module";
 import {AppLoginComponent} from "./app-login.component";
+import {HttpModule} from "@angular/http";
+import {CommonModule} from "@angular/common";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
     imports: [
         BrowserModule,
+        HttpModule,
         CoreModule,
+        CommonModule,
+        FormsModule,
         routing
     ],
-    declarations:[
+    declarations: [
         AppComponent,
         AppLoginComponent
     ],
@@ -21,4 +26,5 @@ import {AppLoginComponent} from "./app-login.component";
     ]
 
 })
-export class AppModule{}
+export class AppModule {
+}

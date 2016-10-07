@@ -1,49 +1,100 @@
-import { Injectable } from '@angular/core';
-import { tokenNotExpired } from 'angular2-jwt/angular2-jwt';
-import { Router } from '@angular/router';
+import {Injectable} from '@angular/core';
+import {Http, Response, Headers} from "@angular/http";
+import {Observable} from "rxjs";
 
-declare var Auth0Lock: any;
+import 'rxjs/add/operator/map';
+
+import {AuthData} from "./auth-data";
+import {Router} from "@angular/router";
 
 @Injectable()
 export class AuthService {
-    // We'll use the Auth0 Lock widget for capturing user credentials
-    lock = new Auth0Lock('YOUR-AUTH0-CLIENTID', 'YOUR-AUTH0-DOMAIN.auth0.com');
 
-    constructor(private router: Router) {
-        // We'll listen for an authentication event to be raised and if successful will log the user in.
-        this.lock.on('authenticated', (authResult: any) => {
-            localStorage.setItem('id_token', authResult.idToken);
+    public token: string;
+    public authData: AuthData;
 
-            this.lock.getProfile(authResult.idToken, (error: any, profile: any) => {
-                if (error) {
-                    console.log(error);
+    private url = 'https://devstat.briz.ua/apirest/LoginRest';
+
+    constructor(private http: Http, private router: Router){
+        var currentUser = JSON.parse(localStorage.getItem('authData'));
+        this.authData = currentUser;
+        console.log(this.authData);
+    }
+
+    login(username, password): Observable<boolean>{
+
+        var headers = new Headers();
+
+        headers.append('Accept', 'json');
+        headers.append('apiKey', username);
+        headers.append('secretKey', password);
+        headers.append('loginType', 'user');
+
+        return this.http.get(this.url,
+            {
+                headers: headers
+            })
+            .map((response: Response) => {
+                let result = response.json();
+                if (result.token){
+
+                    this.authData = result;
+                    localStorage.setItem('authData', JSON.stringify(this.authData));
+                    return true;
                 }
+                return false;
+            })
 
-                localStorage.setItem('profile', JSON.stringify(profile));
-            });
-
-            this.lock.hide();
-        });
+    }
+    logout(){
+        this.authData = new AuthData();
+        localStorage.removeItem('authData');
+        this.router.navigate(['login']);
     }
 
-    // This method will display the lock widget
-    login() {
-        this.lock.show();
+    isExpiredToken(): boolean{
+
+        if(!this.authData.token_expire){
+            return true;
+        }
+
+        var date = new Date();
+        var current_time = date.getTime();
+
+        if (this.authData.token_expire*1000 <= current_time){
+            return true;
+        }
+
+        return false;
+
     }
 
-    // This method will log the use out
-    logout() {
-        // To log out, just remove the token and profile
-        // from local storage
-        localStorage.removeItem('profile');
-        localStorage.removeItem('id_token');
+    loggedIn(): boolean{
 
-        // Send the user back to the public deals page after logout
-        this.router.navigateByUrl('/deals');
+        if (!this.authData){
+            return false;
+        }
+
+        if (!this.authData.token){
+            return false;
+        }
+
+        if (this.isExpiredToken()){
+            return false;
+        }
+
+        return true;
+
     }
 
-    // Finally, this method will check to see if the user is logged in. We'll be able to tell by checking to see if they have a token and whether that token is valid or not.
-    loggedIn() {
-        return tokenNotExpired();
+    getToken(): string | boolean{
+
+        if (!this.loggedIn()){
+            return false
+        }
+
+        return this.authData.token;
+
     }
+
 }
