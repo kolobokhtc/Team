@@ -1,12 +1,11 @@
 import {Injectable} from '@angular/core';
-import {Http, Response, Headers} from "@angular/http";
+import {Http, Response, Headers, RequestOptions, RequestOptionsArgs, Request, RequestMethod} from "@angular/http";
 import {Observable} from "rxjs/Observable";
 
 import 'rxjs/add/operator/map';
 
 import {AuthData} from "./auth-data";
 import {Router} from "@angular/router";
-import {HttpClientService} from "./http-client.service";
 
 @Injectable()
 export class AuthService {
@@ -16,7 +15,7 @@ export class AuthService {
 
     private url = 'https://devstat.briz.ua/apirest/LoginRest';
 
-    constructor(private http: Http, private httpClient: HttpClientService, private router: Router) {
+    constructor(private http: Http, private router: Router) {
         var currentUser = JSON.parse(localStorage.getItem('authData'));
         this.authData = currentUser;
 
@@ -50,14 +49,13 @@ export class AuthService {
 
     }
 
-    setCredentials(){
-        this.httpClient.addHeader("Authorization", 'Bearer ' + this.getToken());
+    setCredentials() {
+
     }
 
-    clearCredentials(){
+    clearCredentials() {
         this.authData = new AuthData();
         localStorage.removeItem('authData');
-        this.httpClient.addHeader("Authorization", '');
     }
 
     logout() {
@@ -112,7 +110,75 @@ export class AuthService {
 
 }
 
+export class SecureHttpError extends Error {
+}
+
 @Injectable()
-export class SecuredHttp{
+export class SecureHttp {
+
+    constructor(private authService: AuthService, private http: Http, private requestOptions: RequestOptions) {}
+
+    private requestWithToken(request: Request, token: string): Observable<Response>{
+
+        if (this.authService.isExpiredToken()){
+            return new Observable<Response>((obs: any) => {
+                obs.error(new SecureHttpError('token is expired or invalid'));
+            })
+        }
+
+        request.headers.set('Authorization', 'Bearer ' + token);
+
+        return this.http.request(request);
+
+    }
+
+    private requestHelper(requestArgs: RequestOptionsArgs, additionalOptions?: RequestOptionsArgs): Observable<Response> {
+        let options = new RequestOptions(requestArgs);
+        if (additionalOptions) {
+            options.merge(additionalOptions);
+        }
+        return this.request(new Request(options));
+    }
+
+    public request(url: string | Request, options?: RequestOptionsArgs): Observable<Response> {
+
+        if (typeof url === 'string') {
+            return this.get(url, options);
+        }
+
+        let request: Request = url as Request;
+        let token: string = this.authService.getToken();
+
+        return this.requestWithToken(request, token);
+
+    }
+
+    public get(url: string, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: '', method: RequestMethod.Get, url: url}, options);
+    }
+
+    public post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: body, method: RequestMethod.Post, url: url}, options);
+    }
+
+    public put(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: body, method: RequestMethod.Put, url: url}, options);
+    }
+
+    public delete(url: string, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: '', method: RequestMethod.Delete, url: url}, options);
+    }
+
+    public patch(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: body, method: RequestMethod.Patch, url: url}, options);
+    }
+
+    public head(url: string, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: '', method: RequestMethod.Head, url: url}, options);
+    }
+
+    public options(url: string, options?: RequestOptionsArgs): Observable<Response> {
+        return this.requestHelper({body: '', method: RequestMethod.Options, url: url}, options);
+    }
 
 }

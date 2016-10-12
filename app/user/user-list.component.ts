@@ -6,7 +6,7 @@ import {AuthService} from "../core/auth.service";
 import {Router} from "@angular/router";
 
 import "rxjs/add/operator/toPromise";
-import {Http} from "@angular/http";
+
 
 
 @Component({
@@ -16,7 +16,7 @@ import {Http} from "@angular/http";
 <button (click)="logout()">LOGOUT</button>`
 })
 export class UserListComponent implements OnInit{
-    constructor(private authService: AuthService, private http: Http, private router: Router) {
+    constructor(private authService: AuthService, private router: Router) {
     };
 
     logout() {
