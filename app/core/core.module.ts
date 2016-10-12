@@ -5,11 +5,13 @@
 import {NgModule, SkipSelf, Optional} from "@angular/core";
 import {AuthService, SecureHttp} from "./auth.service";
 import {AuthGuard} from "./auth-guard.service";
+import {HttpClientService} from "./http-client.service";
 
 @NgModule({
     providers: [
         AuthService,
         SecureHttp,
+        HttpClientService,
         AuthGuard
     ]
 })

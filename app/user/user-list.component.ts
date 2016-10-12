@@ -2,12 +2,9 @@
  * Created by Vladimir Pavlov (kolobokhtc@gmail.com) on 06.10.2016.
  */
 import {Component, OnInit} from "@angular/core";
-import {AuthService} from "../core/auth.service";
-import {Router} from "@angular/router";
+import {AuthService, SecureHttp} from "../core/auth.service";
 
 import "rxjs/add/operator/toPromise";
-
-
 
 @Component({
     moduleId: module.id,
@@ -16,7 +13,7 @@ import "rxjs/add/operator/toPromise";
 <button (click)="logout()">LOGOUT</button>`
 })
 export class UserListComponent implements OnInit{
-    constructor(private authService: AuthService, private router: Router) {
+    constructor(private authService: AuthService, private secureHttp: SecureHttp) {
     };
 
     logout() {
