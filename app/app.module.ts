@@ -7,19 +7,23 @@ import {AppLoginComponent} from "./app-login.component";
 import {HttpModule} from "@angular/http";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {MaterialModule} from "@angular/material";
+import {AppUserComponent} from "./appUser.component";
 
 @NgModule({
     imports: [
         BrowserModule,
         HttpModule,
         CoreModule,
+        MaterialModule.forRoot(),
         CommonModule,
         FormsModule,
         routing
     ],
     declarations: [
         AppComponent,
-        AppLoginComponent
+        AppLoginComponent,
+        AppUserComponent
     ],
     bootstrap: [
         AppComponent

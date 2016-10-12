@@ -1,11 +1,12 @@
 import {Injectable} from '@angular/core';
 import {Http, Response, Headers} from "@angular/http";
-import {Observable} from "rxjs";
+import {Observable} from "rxjs/Observable";
 
 import 'rxjs/add/operator/map';
 
 import {AuthData} from "./auth-data";
 import {Router} from "@angular/router";
+import {HttpClientService} from "./http-client.service";
 
 @Injectable()
 export class AuthService {
@@ -15,13 +16,14 @@ export class AuthService {
 
     private url = 'https://devstat.briz.ua/apirest/LoginRest';
 
-    constructor(private http: Http, private router: Router){
+    constructor(private http: Http, private httpClient: HttpClientService, private router: Router) {
         var currentUser = JSON.parse(localStorage.getItem('authData'));
         this.authData = currentUser;
-        console.log(this.authData);
+
+        this.setCredentials();
     }
 
-    login(username, password): Observable<boolean>{
+    login(username, password): Observable<boolean> {
 
         var headers = new Headers();
 
@@ -36,32 +38,43 @@ export class AuthService {
             })
             .map((response: Response) => {
                 let result = response.json();
-                if (result.token){
+                if (result.token) {
 
                     this.authData = result;
                     localStorage.setItem('authData', JSON.stringify(this.authData));
+                    this.setCredentials();
                     return true;
                 }
                 return false;
             })
 
     }
-    logout(){
+
+    setCredentials(){
+        this.httpClient.addHeader("Authorization", 'Bearer ' + this.getToken());
+    }
+
+    clearCredentials(){
         this.authData = new AuthData();
         localStorage.removeItem('authData');
+        this.httpClient.addHeader("Authorization", '');
+    }
+
+    logout() {
+        this.clearCredentials();
         this.router.navigate(['login']);
     }
 
-    isExpiredToken(): boolean{
+    isExpiredToken(): boolean {
 
-        if(!this.authData.token_expire){
+        if (!this.authData.token_expire) {
             return true;
         }
 
         var date = new Date();
         var current_time = date.getTime();
 
-        if (this.authData.token_expire*1000 <= current_time){
+        if (this.authData.token_expire * 1000 <= current_time) {
             return true;
         }
 
@@ -69,17 +82,17 @@ export class AuthService {
 
     }
 
-    loggedIn(): boolean{
+    loggedIn(): boolean {
 
-        if (!this.authData){
+        if (!this.authData) {
             return false;
         }
 
-        if (!this.authData.token){
+        if (!this.authData.token) {
             return false;
         }
 
-        if (this.isExpiredToken()){
+        if (this.isExpiredToken()) {
             return false;
         }
 
@@ -87,14 +100,19 @@ export class AuthService {
 
     }
 
-    getToken(): string | boolean{
+    getToken(): string {
 
-        if (!this.loggedIn()){
-            return false
+        if (!this.loggedIn()) {
+            return ''
         }
 
         return this.authData.token;
 
     }
+
+}
+
+@Injectable()
+export class SecuredHttp{
 
 }

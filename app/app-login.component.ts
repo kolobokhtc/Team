@@ -6,6 +6,7 @@
 import {Component, OnInit} from "@angular/core";
 import {AuthService} from "./core/auth.service";
 import {Router} from "@angular/router";
+
 @Component({
     moduleId: module.id,
     selector: 'login',
@@ -26,6 +27,7 @@ export class AppLoginComponent implements OnInit{
     constructor(private auth: AuthService, private router: Router) {}
 
     login() {
+        this.loading = true;
         this.auth.login(this.model.username, this.model.password).subscribe(result => {
             if (result === true) {
                 this.router.navigate(['']);
@@ -39,4 +41,5 @@ export class AppLoginComponent implements OnInit{
             this.loading = false;
         });
     }
+
 }
